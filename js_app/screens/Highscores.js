@@ -42,7 +42,11 @@ export default function Highscores() {
         })();
     }, []);
 
-    const [snapshots, dbLoading, dbError] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(20), limitToLast(3)) : null);
+    const [snapshots, dbLoading, dbError] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(20)) : null);
+
+    const string_pattern = /(,\sScore:\s)/;
+    const val_pattern = /(,\sScore:\s\d+)/;
+
 
     return (
         <View style={styles.home_container}>
@@ -54,12 +58,12 @@ export default function Highscores() {
                 </SafeAreaView> :
                 <>
                     {/* Maps the nested list of message to a flat array and sort by created time */}
+                    {/* TODO check for 'HIGHSCORE' and filter. Limit to top 10. */}
                     {snapshots ?
-                        <Scores scores={snapshots.map(el => el?.val()?.string ?? '')}></Scores>
+                        <Scores scores={snapshots.map(el => el?.val()?.string ?? '').filter(s => string_pattern.test(s))}></Scores>
                     : null}
                 </>}
             <StatusBar style="auto" />
         </View>
-
     )
 }

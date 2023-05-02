@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import { IconButton } from "react-native-paper";
 
-// import Game from '../screens/Game';
+import Game from '../screens/Game';
 import Highscores from "../screens/Highscores";
 
 import { View } from "react-native";
@@ -31,7 +31,7 @@ export default function TabNavigator() {
             })}  
         >
             <Tab.Screen name="Highscores" component={Highscores} />
-            <Tab.Screen name="Game" component={Highscores} />
+            <Tab.Screen name="Game" component={Game} />
         </Tab.Navigator>
         </View>
     )

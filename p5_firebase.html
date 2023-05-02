@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"
+        integrity="sha512-3RlxD1bW34eFKPwj9gUXEWtdSMC59QqIqHnD8O/NoTwSJhgxRizdcFVQhUMFyTp5RwLTDL0Lbcqtl8b7bFAzog=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        let textData = [];
+        let currentText = "";
+
+        function setup() {
+            createCanvas(400, 400);
+            background('grey');
+            let input = createInput('');
+            input.position(30, 30);
+            input.size(300);
+            input.id('text-field');
+            input.attribute('disabled', 'true');
+            let button = createButton('post');
+            button.position(350, 30);
+            button.id('submit-button');
+            button.attribute('disabled', 'true');
+        }
+
+        function draw() {
+            background(0);
+            textData.forEach((el, i) => {
+                fill(255);
+                textSize(10);
+                text(el, 20, 80 + i * 20);
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-functions.js";
+        import { getDatabase, serverTimestamp, push, ref, onValue, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBjUEw_DQNMQsZJWfTtLL0PQJoH-xF0kk",
+            authDomain: "sta-cs5041.firebaseapp.com",
+            databaseURL: "https://sta-cs5041-p4.firebaseio.com",
+            projectId: "sta-cs5041",
+            storageBucket: "sta-cs5041.appspot.com",
+            messagingSenderId: "639987847762",
+            appId: "1:639987847762:web:c5a35616a1aa1cf243458b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const functions = getFunctions(app);
+        const database = getDatabase(app);
+        const firebasetoken = "YOUR TOKEN HERE";
+        (async () => {
+            const getToken = httpsCallable(functions, "getToken");
+            const token = await getToken({ token: firebasetoken });
+            if (token?.data?.result === "ok" && token?.data?.token) {
+                const userCredentials = await signInWithCustomToken(auth, token.data.token);
+                const user = userCredentials.user;
+
+                onValue(query(ref(database, 'data'), orderByChild('groupId'), equalTo(20), limitToLast(3)), (snapshot) => {
+                    const data = snapshot.val();
+                    textData = Object.values(data ?? {}).map(el => el?.string?.toString() ?? '');
+                    console.log(textData);
+                });
+
+                const inputField = document.getElementById('text-field');
+                const buttonField = document.getElementById('submit-button');
+                buttonField.addEventListener('click', () => {
+                    push(ref(database, "data"), {
+                        userId: user.uid,
+                        groupId: 20,
+                        timestamp: serverTimestamp(),
+                        type: "str",
+                        string: inputField.value.toString()
+                    });
+                });
+                inputField.removeAttribute('disabled');
+                buttonField.removeAttribute('disabled');
+            } else {
+                console.error(token?.data?.reason ?? "unknownError")
+            }
+        })();
+    </script>
+</body>
+
+</html>
