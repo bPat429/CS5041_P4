@@ -1,0 +1,13 @@
+Installed:
+npx expo install react-native-web react-dom @expo/webpack-config
+npx expo install react-native-safe-area-context react-native-paper
+npx expo install firebase react-firebase-hooks @react-navigation/native
+npx expo install react-native-screens @react-navigation/native-stack @react-navigation/bottom-tabs
+
+To Install:
+
+
+
+Run with:
+npx expo start --web --tunnel
+npm expo web
