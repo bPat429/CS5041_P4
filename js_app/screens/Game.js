@@ -24,10 +24,16 @@ export default function Game() {
 
     const [username, setUsername] = useState("");
     const [invalid_username, setValidUsername] = useState(true);
-    const [score, setScore] = useState(3);
+    const [score, setScore] = useState(0);
+    const [highscore, setHighscore] = useState();
+    const [scores, setScores] = useState([]);
+    const [usernames, setUsernames] = useState([]);
 
     // Get hooks for auth state changes
     const [user, authLoading, authError] = useAuthState(auth);
+
+    const string_pattern = /(,\sScore:\s)/;
+    const val_pattern = /\d+$/;
 
     useEffect(() => {
         (async () => {
@@ -40,14 +46,38 @@ export default function Game() {
           }
         })();
     }, []);
+    
+    const [snapshots, dbLoading, dbError] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(20)) : null);
 
     useEffect(() => {
         if (username.length > 0) {
+            if (scores.length > 0 && usernames.length > 0) {
+                console.log(scores);
+                console.log(usernames);
+                const user_scores = scores.map(function(val, index){console.log(usernames[index] === username); if (usernames[index] === username) return val;});
+                if (user_scores.length > 0) {
+                    setHighscore(user_scores.sort(function(a, b){return b - a})[0]);
+                } else {
+                    setHighscore("");
+                }
+            }
             setValidUsername(false);
         } else {
             setValidUsername(true);
         }
     }, [username]);
+
+    useEffect(() => {
+        if (snapshots && snapshots.length > 0) {
+            const filtered_snapshots = snapshots.map(el => el?.val()?.string ?? '').filter(s => string_pattern.test(s));
+            // Make a list of usernames corresponding to each highscore string
+            setUsernames(filtered_snapshots.map(el => el.slice(0, el.search(string_pattern))));
+            // Make a list of score values corresponding to each highscore string
+            setScores(filtered_snapshots.map(el => parseInt(val_pattern.exec(el)[0])));
+            console.log(filtered_snapshots);
+            console.log(filtered_snapshots.map(el => parseInt(val_pattern.exec(el)[0])));
+        }
+    }, [snapshots]);
 
     // Post
     const handleOnPress = async () => {
@@ -61,19 +91,19 @@ export default function Game() {
             });
         }
     }
-
-    const [snapshots, dbLoading, dbError] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(20), limitToLast(3)) : null);
+    console.log("Highscore = " + highscore);
 
     return (
         <View style={styles.home_container}>
             {/* Change view between loading and the messages screen based on whether messages have finished loading */}
-            {authLoading || dbLoading || !snapshots ?
+            {authLoading || dbLoading || !scores ?
                 <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                     <ActivityIndicator size="large"></ActivityIndicator>
                     <Text style={{ margin: 10 }}>loading...</Text>
                 </SafeAreaView> :
                 <>
-                    <Text>{score}</Text>
+                    <Text>Current Score: {score}</Text>
+                    <Text>High Score: {highscore}</Text>
                     <TextInput
                         placeholder="Username"
                         value={username}
