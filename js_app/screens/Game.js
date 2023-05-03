@@ -18,14 +18,13 @@ import { getDatabase, ref, push, serverTimestamp, query, orderByChild, equalTo, 
 
 import { auth, functions, database, firebaseToken } from '../Firebase';
 
-import Scores from "../components/Scores";
-
 
 // Screen displaying the top scores for the game
 export default function Game() {
 
-    const [username, setUsername] = useState("Test_username");
-    const [score, setScore] = useState("0");
+    const [username, setUsername] = useState("");
+    const [invalid_username, setValidUsername] = useState(true);
+    const [score, setScore] = useState(3);
 
     // Get hooks for auth state changes
     const [user, authLoading, authError] = useAuthState(auth);
@@ -42,15 +41,25 @@ export default function Game() {
         })();
     }, []);
 
+    useEffect(() => {
+        if (username.length > 0) {
+            setValidUsername(false);
+        } else {
+            setValidUsername(true);
+        }
+    }, [username]);
+
     // Post
     const handleOnPress = async () => {
-        push(ref(database, "data"), {
-            userId: user.uid,
-            groupId: 20,
-            timestamp: serverTimestamp(),
-            type: "str",
-            string: (username + ", Score: " + score)
-        });
+        if (!invalid_username) {
+            push(ref(database, "data"), {
+                userId: user.uid,
+                groupId: 20,
+                timestamp: serverTimestamp(),
+                type: "str",
+                string: (username + ", Score: " + score)
+            });
+        }
     }
 
     const [snapshots, dbLoading, dbError] = useList(user ? query(ref(database, 'data'), orderByChild('groupId'), equalTo(20), limitToLast(3)) : null);
@@ -64,9 +73,16 @@ export default function Game() {
                     <Text style={{ margin: 10 }}>loading...</Text>
                 </SafeAreaView> :
                 <>
-                    <Button icon="send" mode="contained" style={{ margin: 10 }}
+                    <Text>{score}</Text>
+                    <TextInput
+                        placeholder="Username"
+                        value={username}
+                        // Update state on text change
+                        onChangeText={username => setUsername(username)}
+                        style={styles.login_container}></TextInput>
+                    <Button icon="send" disabled={invalid_username} mode="contained" style={{ margin: 10 }}
                         onPress={handleOnPress}
-                    >Post</Button>
+                    >Update Highscore</Button>
                 </>}
             <StatusBar style="auto" />
         </View>
