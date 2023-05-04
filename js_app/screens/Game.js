@@ -1,3 +1,5 @@
+import { A } from '@expo/html-elements';
+
 // Import safe area context component to ensure the UI is within safe area (mostly only applicable on mobile devices)
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, TextInput, ActivityIndicator, Text, HelperText } from "react-native-paper";
@@ -102,6 +104,8 @@ export default function Game() {
                     <Text style={{ margin: 10 }}>loading...</Text>
                 </SafeAreaView> :
                 <>
+
+                    <A href="http://127.0.0.1:5500/p5/index.html">Go to Game</A>
                     <Text>Current Score: {score}</Text>
                     <Text>High Score: {highscore}</Text>
                     <TextInput
