@@ -89,7 +89,14 @@ export default function Game() {
                     <Text style={{ margin: 10 }}>loading...</Text>
                 </SafeAreaView> :
                 <>
-
+                    <Text style={{ marginTop: "10px", marginBottom: "10px", fontSize: "20px", alignSelf: "center" }}>Asteroid Tennis</Text>
+                    <Text style={{ marginTop: "5px", fontSize: "15px", alignSelf: "center" }}>Asteroid Tennis requires reflecting black and grey asteroids back into space.</Text>
+                    <Text style={{ marginTop: "5px", fontSize: "15px", alignSelf: "center" }}>Gain points by reflecting asteroids, and gain points when bonus asteroids appear.</Text>
+                    <Text style={{ marginTop: "5px", fontSize: "15px", alignSelf: "center" }}>Bonus asteroids appear when a button on the IOT wall is pressed.</Text>
+                    <Text style={{ marginTop: "5px", fontSize: "15px", alignSelf: "center" }}>When an asteroid passes your character the game ends, and you can upload your score.</Text>
+                    <Text style={{ marginTop: "5px", fontSize: "15px", alignSelf: "center" }}>Your score is then displayed on the IOT text display, and stored in the database.</Text>
+                    <Text style={{ marginTop: "5px", fontSize: "15px", alignSelf: "center" }}>See Highscores for the top 10 scores.</Text>
+                    <Text style={{ marginTop: "5px", fontSize: "15px", alignSelf: "center" }}>Use the textbox below to check your own personal Highscore</Text>
                     <A href="http://127.0.0.1:5500/p5/index.html" style={{ marginTop: "10px", padding: "10px", fontSize: "40px", alignSelf: "center", backgroundColor: "white" }}>Play Now</A>
                     <TextInput
                         placeholder="Check your highscore"
