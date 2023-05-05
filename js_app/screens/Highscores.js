@@ -49,7 +49,7 @@ export default function Highscores() {
 
 
     return (
-        <View style={styles.home_container}>
+        <View style={styles.background_container}>
             {/* Change view between loading and the messages screen based on whether messages have finished loading */}
             {authLoading || dbLoading || !snapshots ?
                 <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
