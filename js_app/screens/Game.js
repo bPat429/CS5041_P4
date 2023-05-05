@@ -26,7 +26,6 @@ export default function Game() {
 
     const [username, setUsername] = useState("");
     const [invalid_username, setValidUsername] = useState(true);
-    const [score, setScore] = useState(0);
     const [highscore, setHighscore] = useState();
     const [scores, setScores] = useState([]);
     const [usernames, setUsernames] = useState([]);
@@ -81,20 +80,6 @@ export default function Game() {
         }
     }, [snapshots]);
 
-    // Post
-    const handleOnPress = async () => {
-        if (!invalid_username) {
-            push(ref(database, "data"), {
-                userId: user.uid,
-                groupId: 20,
-                timestamp: serverTimestamp(),
-                type: "str",
-                string: (username + ", Score: " + score)
-            });
-        }
-    }
-    console.log("Highscore = " + highscore);
-
     return (
         <View style={styles.home_container}>
             {/* Change view between loading and the messages screen based on whether messages have finished loading */}
@@ -105,18 +90,15 @@ export default function Game() {
                 </SafeAreaView> :
                 <>
 
-                    <A href="http://127.0.0.1:5500/p5/index.html">Go to Game</A>
-                    <Text>Current Score: {score}</Text>
-                    <Text>High Score: {highscore}</Text>
+                    <A href="http://127.0.0.1:5500/p5/index.html" style={{ marginTop: "10px", padding: "10px", fontSize: "40px", alignSelf: "center", backgroundColor: "white" }}>Play Now</A>
                     <TextInput
-                        placeholder="Username"
+                        placeholder="Check your highscore"
                         value={username}
                         // Update state on text change
                         onChangeText={username => setUsername(username)}
-                        style={styles.login_container}></TextInput>
-                    <Button icon="send" disabled={invalid_username} mode="contained" style={{ margin: 10 }}
-                        onPress={handleOnPress}
-                    >Update Highscore</Button>
+                        style={{ marginTop: "10px", fontSize: "20px", alignSelf: "center" }}>    
+                    </TextInput>
+                    <Text style={{ marginLeft: "10px", padding: "20px", fontSize: "20px", alignSelf: "center" }}>Your Highscore: {highscore}</Text>
                 </>}
             <StatusBar style="auto" />
         </View>

@@ -2,9 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.1/firebase
 import { getAuth, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-auth.js"
 import { getDatabase, onChildAdded, ref, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-database.js"
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-functions.js"
+// import { checkSerial } from "https://cdn.jsdelivr.net/npm/p5.serialserver@latest/lib/p5.serialport.js"
 
-
-
+// Serial stuff
+let serial;
+let portName = '/dev/ttyS3';
+let inData;
+// Game stuff
 let player;
 let asteroids;
 const ASTEROID_COOLDOWN = 1000;
@@ -70,26 +74,6 @@ async function authenticate() {
     });
 }
 
-function uploadScore() {
-    name_input.hide();
-    submit_button.hide();
-    push(ref(database, "data"), {
-        userId: uid,
-        groupId: 20,
-        timestamp: serverTimestamp(),
-        type: "str",
-        string: name_input.value() + ", Score: " + score
-    });
-}
-
-function addBonusAsteroid(type) {
-    if (buttons_enabled && asteroids.length < 6) {
-        asteroids.push(new Asteroid(type));
-        bonus_asteroids += 1;
-        score += 1;
-    }
-}
-
 function setup() {
     buttons_enabled = false;
     authenticate();
@@ -113,6 +97,35 @@ function setup() {
     scores_button.mousePressed(gotoHighscores);
     game_start = new Date();
     bonus_asteroids = 0;
+    // Serial stuff
+    serial = new p5.SerialPort('138.251.29.109');
+    serial.on('data', serialEvent);
+    serial.open(portName);
+}
+
+function serialEvent() {
+    inData = String(serial.readString());
+    console.log(inData);
+}
+
+function uploadScore() {
+    name_input.hide();
+    submit_button.hide();
+    push(ref(database, "data"), {
+        userId: uid,
+        groupId: 20,
+        timestamp: serverTimestamp(),
+        type: "str",
+        string: name_input.value() + ", Score: " + score
+    });
+}
+
+function addBonusAsteroid(type) {
+    if (buttons_enabled && asteroids.length < 6) {
+        asteroids.push(new Asteroid(type));
+        bonus_asteroids += 1;
+        score += 1;
+    }
 }
 
 function setupGameover() {
@@ -140,7 +153,8 @@ function draw() {
         background(255);
         fill(0);
         textSize(25);
-        text("Score: " + score + ". Bonus Asteroids: " + bonus_asteroids, 10, 30);
+        // text("Score: " + score + ". Bonus Asteroids: " + bonus_asteroids, 10, 30);
+        text("Score: " + inData, 10, 30);
         if (keyIsDown(LEFT_ARROW)) {
             player.moveLeft();
         } else if (keyIsDown(RIGHT_ARROW)) {

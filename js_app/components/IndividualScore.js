@@ -9,7 +9,7 @@ export default function IndividualScore(props) {
     }}>
       <Card.Title title={props.username} />
       <Card.Content>
-        <Text variant="bodyMedium">{props.score}</Text>
+        <Text variant="bodyMedium">#{props.i + 1}         Score: {props.score}</Text>
       </Card.Content>
     </Card>
   )
