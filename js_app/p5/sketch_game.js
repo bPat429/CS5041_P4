@@ -2,8 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.1/firebase
 import { getAuth, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-auth.js"
 import { getDatabase, onChildAdded, ref, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-database.js"
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-functions.js"
-// import { checkSerial } from "https://cdn.jsdelivr.net/npm/p5.serialserver@latest/lib/p5.serialport.js"
-// import { createSerial } from "https://unpkg.com/@gohai/p5.webserial@^1/libraries/p5.webserial.js"
 
 // Serial stuff
 let port;
@@ -98,10 +96,6 @@ function setup() {
     scores_button.mousePressed(gotoHighscores);
     game_start = new Date();
     bonus_asteroids = 0;
-    // Serial stuff
-    // serial = new p5.SerialPort('138.251.29.109');
-    // serial.on('data', serialEvent);
-    // serial.open(portName);
     port = createSerial();
     let usedPorts = usedSerialPorts();
     if (usedPorts.length > 0) {
