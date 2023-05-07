@@ -10,4 +10,5 @@ To Install:
 
 Run with:
 npx expo start --web --tunnel
+npx expo start --web
 npm expo web

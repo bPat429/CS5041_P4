@@ -3,11 +3,10 @@ import { getAuth, onAuthStateChanged, signInWithCustomToken } from "https://www.
 import { getDatabase, onChildAdded, ref, push, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-database.js"
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.1.1/firebase-functions.js"
 // import { checkSerial } from "https://cdn.jsdelivr.net/npm/p5.serialserver@latest/lib/p5.serialport.js"
+// import { createSerial } from "https://unpkg.com/@gohai/p5.webserial@^1/libraries/p5.webserial.js"
 
 // Serial stuff
-let serial;
-let portName = '/dev/ttyS3';
-let inData;
+let port;
 // Game stuff
 let player;
 let asteroids;
@@ -29,6 +28,8 @@ let auth;
 let uid;
 // Return to expo button
 let scores_button;
+
+let connectBtn;
 
 async function authenticate() {
     const firebaseConfig = {
@@ -61,15 +62,15 @@ async function authenticate() {
     const button_6 = query(commentsRef, orderByChild('groupId'), equalTo(6));
     const button_7 = query(commentsRef, orderByChild('groupId'), equalTo(7));
   
-    let listener_1 = onChildAdded(button_5, function(snapshot) {
+    onChildAdded(button_5, function(snapshot) {
         addBonusAsteroid(1)
     });
   
-    let listener_2 = onChildAdded(button_6, function(snapshot) {
+    onChildAdded(button_6, function(snapshot) {
         addBonusAsteroid(2)
     });
   
-    let listener_3 = onChildAdded(button_7, function(snapshot) {
+    onChildAdded(button_7, function(snapshot) {
         addBonusAsteroid(3)
     });
 }
@@ -98,14 +99,25 @@ function setup() {
     game_start = new Date();
     bonus_asteroids = 0;
     // Serial stuff
-    serial = new p5.SerialPort('138.251.29.109');
-    serial.on('data', serialEvent);
-    serial.open(portName);
+    // serial = new p5.SerialPort('138.251.29.109');
+    // serial.on('data', serialEvent);
+    // serial.open(portName);
+    port = createSerial();
+    let usedPorts = usedSerialPorts();
+    if (usedPorts.length > 0) {
+        port.open(usedPorts[0], 115200);
+    }
+    connectBtn = createButton('Connect to Micro:bit');
+    connectBtn.position(width/2 - connectBtn.width/2, height/2);
+    connectBtn.mousePressed(connectBtnClick);
 }
 
-function serialEvent() {
-    inData = String(serial.readString());
-    console.log(inData);
+function connectBtnClick() {
+    if (!port.opened()) {
+        port.open('MicroPython', 115200);
+    } else {
+        port.close();
+    }
 }
 
 function uploadScore() {
@@ -121,7 +133,7 @@ function uploadScore() {
 }
 
 function addBonusAsteroid(type) {
-    if (buttons_enabled && asteroids.length < 6) {
+    if (buttons_enabled && asteroids.length < 6 && gamestate == 0) {
         asteroids.push(new Asteroid(type));
         bonus_asteroids += 1;
         score += 1;
@@ -140,38 +152,45 @@ function gotoHighscores() {
 
 
 function draw() {
-    if (gamestate == 0) {
-        if (!buttons_enabled) {
-            if (((new Date()) - game_start > BUTTONS_ENABLED_TIMER)) {
-                buttons_enabled = true;
+    if (port.opened()) {
+        connectBtn.hide();
+        if (gamestate == 0) {
+            if (!buttons_enabled) {
+                if (((new Date()) - game_start > BUTTONS_ENABLED_TIMER)) {
+                    buttons_enabled = true;
+                }
             }
+            if (asteroids.length < MAX_ASTEROIDS && ((new Date()) - last_added > ASTEROID_COOLDOWN)) {
+                asteroids.push(new Asteroid(0));
+                last_added = (new Date());
+            }
+            background(255);
+            fill(0);
+            textSize(25);
+            text("Score: " + score + ". Bonus Asteroids: " + bonus_asteroids, 10, 30);
+            let serial_string = String(port.last());
+            console.log(serial_string);
+            console.log(serial_string == "L");
+            if (keyIsDown(LEFT_ARROW) || serial_string == "L") {
+                player.moveLeft();
+            } else if (keyIsDown(RIGHT_ARROW) || serial_string == "R") {
+                player.moveRight();
+            }
+            if (asteroids.length > 0) {
+                asteroids.forEach(handleAsteroids);
+            }
+            player.drawComponent();
+        } else {
+            background(200);
+            fill(0);
+            textSize(25);
+            text("Gameover. You scored: " + score, 10, 30);
+            text("Refresh to try again.", 60, height/2);
+            text("Upload your score:", 80, height - 20);
         }
-        if (asteroids.length < MAX_ASTEROIDS && ((new Date()) - last_added > ASTEROID_COOLDOWN)) {
-            asteroids.push(new Asteroid(0));
-            last_added = (new Date());
-        }
-        background(255);
-        fill(0);
-        textSize(25);
-        // text("Score: " + score + ". Bonus Asteroids: " + bonus_asteroids, 10, 30);
-        text("Score: " + inData, 10, 30);
-        if (keyIsDown(LEFT_ARROW)) {
-            player.moveLeft();
-        } else if (keyIsDown(RIGHT_ARROW)) {
-            player.moveRight();
-        }
-        if (asteroids.length > 0) {
-            asteroids.forEach(handleAsteroids);
-        }
-        player.drawComponent();
     } else {
-        background(200);
-        fill(0);
-        textSize(25);
-        text("Gameover. You scored: " + score, 10, 30);
-        text("Refresh to try again.", 60, height/2);
-        text("Upload your score:", 80, height - 20);
-        
+        background(255);
+        connectBtn.show();
     }
 }
 
@@ -180,7 +199,7 @@ class Player {
     constructor() {
         this.player_height = 30;
         this.player_width = 60;
-        this.player_speed = 5;
+        this.player_speed = 7;
         this.x_pos = 0;
         this.y_pos = height - this.player_height;
     }
@@ -243,7 +262,7 @@ class Asteroid {
     // Add disable if the asteroid gets past the player
     constructor(type) {
         this.asteroid_radius = 5 + random(20);
-        this.asteroid_speed = 2 + random(3);
+        this.asteroid_speed = 3 + random(1);
         this.has_bounced = false;
         this.default_colour = 0;
         if (type == 0) {
