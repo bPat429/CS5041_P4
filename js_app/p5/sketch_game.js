@@ -58,7 +58,7 @@ async function authenticate() {
     
     const commentsRef = ref(database, 'data');
   
-    const button_5 = query(commentsRef, orderByChild('groupId'), equalTo(20));
+    const button_5 = query(commentsRef, orderByChild('groupId'), equalTo(5));
     const button_6 = query(commentsRef, orderByChild('groupId'), equalTo(6));
     const button_7 = query(commentsRef, orderByChild('groupId'), equalTo(7));
   
